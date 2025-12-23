@@ -1,16 +1,16 @@
-import os
 import json
-from typing import List, Dict, Any
-from fastapi import FastAPI, Request, Form
+import os
+from typing import Any, Dict, List
+
+from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-
 try:
     from sudachipy import Dictionary, SplitMode
     SUDACHI_AVAILABLE = True
-    tokenizer = Dictionary().create()
+    tokenizer = Dictionary(dict_type="small").create()
 except ImportError:
     SUDACHI_AVAILABLE = False
     tokenizer = None
