@@ -1,0 +1,2 @@
+sudachidict-small
+sudachidict-full

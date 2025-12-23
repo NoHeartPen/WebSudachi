@@ -1,0 +1,174 @@
+
+<!DOCTYPE html>
+<html lang="ja" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webスダチ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@2.0.0"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              'inter': ['Inter', 'system-ui', 'sans-serif'],
+              'jp': ['Inter', 'Hiragino Sans', 'Yu Gothic', 'Meiryo', 'sans-serif']
+            },
+            animation: {
+              'fade-in': 'fadeIn 0.3s ease-in-out',
+              'slide-up': 'slideUp 0.4s ease-out',
+              'pulse-subtle': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' }
+              },
+              slideUp: {
+                '0%': { transform: 'translateY(20px)', opacity: '0' },
+                '100%': { transform: 'translateY(0)', opacity: '1' }
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="h-full font-jp text-gray-900 antialiased">
+<div class="min-h-full">
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-sm">茶</span>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-semibold text-gray-900">Webスダチ</h1>
+                        <p class="text-sm text-gray-500">オンラインでSudachiしてみよう！</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="hidden sm:flex items-center text-sm text-gray-500">
+                        <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                        オンライン
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Analysis Form -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-8">
+
+
+            <form hx-post="/analyze" hx-target="#results" hx-indicator="#loading" class="p-6">
+                <div class="space-y-6">
+                    <!-- Text Input -->
+                    <div>
+                        <label for="text" class="block text-sm font-medium text-gray-700 mb-3">
+                            入力テキスト
+                        </label>
+                        <div class="relative">
+                                <textarea
+                                        id="text"
+                                        name="text"
+                                        rows="4"
+                                        class="block w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition duration-200"
+                                        placeholder="なんで春日影やったの!?"
+                                        required
+                                ></textarea>
+                            <div class="absolute bottom-3 right-3 text-xs text-gray-400" id="char-count">
+                                0文字
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-center justify-between pt-4">
+                        <button
+                                type="button"
+                                onclick="document.getElementById('text').value=''; updateCharCount()"
+                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200"
+                        >
+                            クリア
+                        </button>
+
+                        <div class="flex items-center space-x-3">
+                            <div id="loading" class="htmx-indicator flex items-center text-blue-600">
+                                <svg class="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                解析中...
+                            </div>
+
+                            <button
+                                    type="submit"
+                                    class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 shadow-sm"
+                            >
+                                解析実行
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="animate-fade-in"></div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-16 border-t border-gray-200 bg-white">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center">
+                <p class="text-sm text-gray-500">
+                    Code with ❤️
+                </p>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<script>
+  // Character counter
+  const textArea = document.getElementById('text');
+  const charCount = document.getElementById('char-count');
+
+  function updateCharCount() {
+    const count = textArea.value.length;
+    charCount.textContent = `${count}文字`;
+  }
+
+  textArea.addEventListener('input', updateCharCount);
+
+  // Form validation
+  document.querySelector('form').addEventListener('htmx:before-request', function(event) {
+    const text = textArea.value.trim();
+    if (!text) {
+      event.preventDefault();
+      textArea.focus();
+      textArea.classList.add('ring-2', 'ring-red-500', 'border-red-500');
+      setTimeout(() => {
+        textArea.classList.remove('ring-2', 'ring-red-500', 'border-red-500');
+      }, 2000);
+    }
+  });
+
+  // Add example insertion functionality if needed
+  function insertExample(text) {
+    textArea.value = text;
+    updateCharCount();
+    textArea.focus();
+  }
+</script>
+</body>
+</html>
