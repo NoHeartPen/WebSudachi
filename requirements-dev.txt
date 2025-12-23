@@ -1,2 +1,2 @@
-sudachidict-small
+sudachidict-core
 sudachidict-full
