@@ -120,7 +120,10 @@ def index(request: Request):
 
 
 @app.post("/analyze")
-async def analyze_text(request: Request, text: str = Form(...)):
+@app.post("/analyze")
+async def analyze_text(
+    request: Request, text: str = Form(...), columns: List[str] = Form(default=[])
+):
     """テキスト解析のエンドポイント"""
     if not text or not text.strip():
         return templates.TemplateResponse(
@@ -132,6 +135,21 @@ async def analyze_text(request: Request, text: str = Form(...)):
         # テキスト解析を実行
         analysis_results = analyze_text_with_sudachi(text.strip())
 
+        # デフォルトの列設定（何も選択されていない場合）
+        if not columns:
+            columns = [
+                "number",
+                "surface",
+                "dictionary_form",
+                "reading_form",
+                "pos",
+                "pos_detail1",
+                "pos_detail2",
+                "conjugation_type",
+                "conjugation_form",
+                "normalized_form",
+            ]
+
         return templates.TemplateResponse(
             "partials/analysis_result.html",
             {
@@ -139,8 +157,9 @@ async def analyze_text(request: Request, text: str = Form(...)):
                 "original_text": text.strip(),
                 "results": analysis_results,
                 "total_morphemes": len(analysis_results),
-                "sudachi_available": SUDACHI_AVAILABLE
-            }
+                "sudachi_available": SUDACHI_AVAILABLE,
+                "selected_columns": columns,
+            },
         )
     except Exception as e:
         return templates.TemplateResponse(

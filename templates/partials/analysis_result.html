@@ -22,62 +22,102 @@
             <table class="table table-hover mb-0" id="results-table">
                 <thead class="table-light">
                 <tr>
+                    {% if 'number' in selected_columns %}
                     <th scope="col" class="text-center">番号</th>
+                    {% endif %}
+                    {% if 'surface' in selected_columns %}
                     <th scope="col" class="results-table-th">表層形</th>
+                    {% endif %}
+                    {% if 'dictionary_form' in selected_columns %}
                     <th class="results-table-th">辞書形</th>
+                    {% endif %}
+                    {% if 'reading_form' in selected_columns %}
                     <th class="results-table-th">読み</th>
+                    {% endif %}
+                    {% if 'pos' in selected_columns %}
                     <th class="results-table-th">品詞</th>
+                    {% endif %}
+                    {% if 'pos_detail1' in selected_columns %}
                     <th class="results-table-th">品詞詳細1</th>
+                    {% endif %}
+                    {% if 'pos_detail2' in selected_columns %}
                     <th class="results-table-th">品詞詳細2</th>
+                    {% endif %}
+                    {% if 'conjugation_type' in selected_columns %}
                     <th class="results-table-th">活用型</th>
+                    {% endif %}
+                    {% if 'conjugation_form' in selected_columns %}
                     <th class="results-table-th">活用形</th>
+                    {% endif %}
+                    {% if 'normalized_form' in selected_columns %}
                     <th class="results-table-th">正規化形</th>
+                    {% endif %}
                 </tr>
                 </thead>
                 <tbody>
                 {% for result in results %}
                 <tr>
+                    {% if 'number' in selected_columns %}
                     <td class="text-center text-muted fw-bold">
                         {{ loop.index }}
                     </td>
+                    {% endif %}
+                    {% if 'surface' in selected_columns %}
                     <td>
-                            <span class="text-muted">
-                                {{ result.surface }}
-                            </span>
+                        <span class="text-muted">
+                            {{ result.surface }}
+                        </span>
                     </td>
+                    {% endif %}
+                    {% if 'dictionary_form' in selected_columns %}
                     <td class="fw-medium text-dark">
                         {{ result.dictionary_form }}
                     </td>
+                    {% endif %}
+                    {% if 'reading_form' in selected_columns %}
                     <td class="text-muted">
                         {{ result.reading_form }}
                     </td>
+                    {% endif %}
+                    {% if 'pos' in selected_columns %}
                     <td>
-                            <span class="fw-bold
-                                {% if result.pos == '名詞' %}text-success
-                                {% elif result.pos == '動詞' %}text-primary
-                                {% elif result.pos == '形容詞' %}text-info
-                                {% elif result.pos == '副詞' %}text-warning
-                                {% elif result.pos == '助詞' %}text-danger
-                                {% elif result.pos == '助動詞' %}text-secondary
-                                {% else %}text-dark{% endif %}">
-                                {{ result.pos }}
-                            </span>
+                        <span class="fw-bold
+                            {% if result.pos == '名詞' %}text-success
+                            {% elif result.pos == '動詞' %}text-primary
+                            {% elif result.pos == '形容詞' %}text-info
+                            {% elif result.pos == '副詞' %}text-warning
+                            {% elif result.pos == '助詞' %}text-danger
+                            {% elif result.pos == '助動詞' %}text-secondary
+                            {% else %}text-dark{% endif %}">
+                            {{ result.pos }}
+                        </span>
                     </td>
+                    {% endif %}
+                    {% if 'pos_detail1' in selected_columns %}
                     <td class="text-muted small">
                         {{ result.pos_detail1 if result.pos_detail1 != '*' else '-' }}
                     </td>
+                    {% endif %}
+                    {% if 'pos_detail2' in selected_columns %}
                     <td class="text-muted small">
                         {{ result.pos_detail2 if result.pos_detail2 != '*' else '-' }}
                     </td>
+                    {% endif %}
+                    {% if 'conjugation_type' in selected_columns %}
                     <td class="text-muted small">
                         {{ result.conjugation_type if result.conjugation_type != '*' else '-' }}
                     </td>
+                    {% endif %}
+                    {% if 'conjugation_form' in selected_columns %}
                     <td class="text-muted small">
                         {{ result.conjugation_form if result.conjugation_form != '*' else '-' }}
                     </td>
+                    {% endif %}
+                    {% if 'normalized_form' in selected_columns %}
                     <td class="text-muted">
                         {{ result.normalized_form }}
                     </td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
                 </tbody>
