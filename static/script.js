@@ -223,3 +223,88 @@ document.addEventListener('DOMContentLoaded', function() {
 		initializeClipboard();
 	}
 });
+
+// 全选列
+function selectAllColumns() {
+	const checkboxes = document.querySelectorAll('input[name="columns"]');
+	checkboxes.forEach(checkbox => checkbox.checked = true);
+}
+
+// 全部取消选择
+function deselectAllColumns() {
+	const checkboxes = document.querySelectorAll('input[name="columns"]');
+	checkboxes.forEach(checkbox => checkbox.checked = false);
+}
+
+// 获取选中的列
+function getSelectedColumns() {
+	const checkboxes = document.querySelectorAll('input[name="columns"]:checked');
+	return Array.from(checkboxes).map(checkbox => checkbox.value);
+}
+
+// 验证是否至少选择了一列
+function validateColumnSelection() {
+	const selectedColumns = getSelectedColumns();
+	if (selectedColumns.length === 0) {
+		// 显示错误提示
+		showColumnSelectionError();
+		return false;
+	}
+	return true;
+}
+
+// 显示列选择错误提示
+function showColumnSelectionError() {
+	// 创建或显示错误 toast
+	let errorToast = document.getElementById('columnSelectionErrorToast');
+
+	if (!errorToast) {
+		// 如果不存在，创建新的 toast
+		const toastContainer = document.querySelector('.toast-container');
+		const toastHtml = `
+            <div id="columnSelectionErrorToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+                    <strong class="me-auto">选择提示</strong>
+                    <small>たった今</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    表示する列を少なくとも1つ選択してください
+                </div>
+            </div>
+        `;
+		toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+		errorToast = document.getElementById('columnSelectionErrorToast');
+	}
+
+	const toast = new bootstrap.Toast(errorToast, {
+		autohide: true,
+		delay: 5000,
+	});
+	toast.show();
+}
+
+// 在 DOMContentLoaded 事件中添加表单提交验证
+document.addEventListener('DOMContentLoaded', function() {
+	// 添加表单提交验证
+	const form = document.querySelector('form[hx-post="/analyze"]');
+	if (form) {
+		form.addEventListener('submit', function(e) {
+			if (!validateColumnSelection()) {
+				e.preventDefault();
+				e.stopPropagation();
+				return false;
+			}
+		});
+
+		// 也要处理 HTMX 的提交事件
+		form.addEventListener('htmx:configRequest', function(e) {
+			if (!validateColumnSelection()) {
+				e.preventDefault();
+				return false;
+			}
+		});
+	}
+});
+
