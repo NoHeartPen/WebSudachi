@@ -126,8 +126,66 @@
     </div>
 </div>
 
+<script>
+	// CSV export functionality
+	function exportToCSV() {
+		const table = document.getElementById('results-table');
+		let csv = '';
 
+		// Headers
+		const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
+		csv += headers.join(',') + '\n';
 
+		// Data rows
+		const rows = table.querySelectorAll('tbody tr');
+		rows.forEach(row => {
+			const cells = Array.from(row.querySelectorAll('td')).map(td => {
+				let text = td.textContent.trim();
+				if (text.includes(',')) {
+					text = `"${text}"`;
+				}
+				return text;
+			});
+			csv += cells.join(',') + '\n';
+		});
+
+		// Download
+		const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+		const link = document.createElement('a');
+		link.href = URL.createObjectURL(blob);
+		link.download = `morphological_analysis_${new Date().toISOString().split('T')[0]}.csv`;
+		link.click();
+	}
+
+	// Copy results functionality
+	function copyResults() {
+		const table = document.getElementById('results-table');
+		let text = '';
+
+		// Headers
+		const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
+		text += headers.join('\t') + '\n';
+
+		// Data rows
+		const rows = table.querySelectorAll('tbody tr');
+		rows.forEach(row => {
+			const cells = Array.from(row.querySelectorAll('td')).map(td => td.textContent.trim());
+			text += cells.join('\t') + '\n';
+		});
+
+		navigator.clipboard.writeText(text).then(() => {
+			// Show success message
+			const button = event.target;
+			const originalText = button.textContent;
+			button.textContent = 'コピーしました!';
+			button.classList.add('bg-green-50', 'text-green-700', 'border-green-300');
+			setTimeout(() => {
+				button.textContent = originalText;
+				button.classList.remove('bg-green-50', 'text-green-700', 'border-green-300');
+			}, 2000);
+		});
+	}
+</script>
 
 <!-- Custom styles for animations -->
 <style>
