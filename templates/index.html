@@ -1,174 +1,155 @@
-
 <!DOCTYPE html>
-<html lang="ja" class="h-full bg-gray-50">
+<html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Webスダチ</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../static/style.css">
+    <!-- HTMX for AJAX requests -->
     <script src="https://unpkg.com/htmx.org@2.0.0"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              'inter': ['Inter', 'system-ui', 'sans-serif'],
-              'jp': ['Inter', 'Hiragino Sans', 'Yu Gothic', 'Meiryo', 'sans-serif']
-            },
-            animation: {
-              'fade-in': 'fadeIn 0.3s ease-in-out',
-              'slide-up': 'slideUp 0.4s ease-out',
-              'pulse-subtle': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-            },
-            keyframes: {
-              fadeIn: {
-                '0%': { opacity: '0' },
-                '100%': { opacity: '1' }
-              },
-              slideUp: {
-                '0%': { transform: 'translateY(20px)', opacity: '0' },
-                '100%': { transform: 'translateY(0)', opacity: '1' }
-              }
-            }
-          }
-        }
-      }
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
 </head>
-<body class="h-full font-jp text-gray-900 antialiased">
-<div class="min-h-full">
-    <!-- Header -->
-    <header class="bg-white border-b border-gray-200">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center space-x-4">
-                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                        <span class="text-white font-bold text-sm">茶</span>
-                    </div>
-                    <div>
-                        <h1 class="text-xl font-semibold text-gray-900">Webスダチ</h1>
-                        <p class="text-sm text-gray-500">オンラインでSudachiしてみよう！</p>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <div class="hidden sm:flex items-center text-sm text-gray-500">
-                        <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
-                        オンライン
-                    </div>
-                </div>
+
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+    <div class="container">
+        <!-- Logo/Brand -->
+        <a class="navbar-brand fw-bold text-primary" href="/">
+            Webスダチ
+        </a>
+
+        <!-- Mobile toggle -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Nav items -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <span class="nav-link text-muted">Sudachi 形態素解析ツール</span>
+                </li>
+            </ul>
+
+            <!-- Right side buttons -->
+            <div class="d-flex gap-2 flex-column flex-lg-row">
+                <a href="https://github.com/noheartpen/WebSudachi"
+                rel="noopener noreferrer" target="_blank" class="btn btn-outline-dark btn-sm" target="_blank">
+                    <i class="bi bi-github me-1"></i>
+                    ⭐️をお願い
+                </a>
+                <a href="https://github.com/noheartpen/WebSudachi/issues" rel="noopener noreferrer"
+                class="btn btn-outline-danger btn-sm" target="_blank">
+                    <i class="bi bi-bug me-1"></i> Bug 報告
+                </a>
+                <button class="btn btn-outline-success btn-sm" onclick="shareNative()">
+                    <i class="bi bi-share me-1"></i> シェア
+                </button>
             </div>
         </div>
-    </header>
+    </div>
+</nav>
 
-    <!-- Main Content -->
-    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-        <!-- Analysis Form -->
-        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-8">
-
-
-            <form hx-post="/analyze" hx-target="#results" hx-indicator="#loading" class="p-6">
-                <div class="space-y-6">
-                    <!-- Text Input -->
-                    <div>
-                        <label for="text" class="block text-sm font-medium text-gray-700 mb-3">
-                            入力テキスト
-                        </label>
-                        <div class="relative">
-                                <textarea
-                                        id="text"
-                                        name="text"
-                                        rows="4"
-                                        class="block w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition duration-200"
-                                        placeholder="なんで春日影やったの!?"
-                                        required
-                                ></textarea>
-                            <div class="absolute bottom-3 right-3 text-xs text-gray-400" id="char-count">
-                                0文字
-                            </div>
-                        </div>
+<div class="main-container">
+    <div class="content-wrapper">
+        <!-- Main Content Card -->
+        <div class="card main-card">
+            <div class="card-body">
+                <form hx-post="/analyze" hx-target="#results">
+                    <!-- Text Input with Floating Label -->
+                    <div class="form-floating mb-3">
+                        <textarea
+                                class="form-control"
+                                id="text"
+                                name="text"
+                                placeholder="解析するテキストを入力してください"
+                                required>なんで春日影やったの!?</textarea>
+                        <label for="text">テキストを入力してください</label>
                     </div>
 
-                    <!-- Action Buttons -->
-                    <div class="flex items-center justify-between pt-4">
+                    <!-- Button Group -->
+                    <div class="d-flex gap-2 justify-content-end flex-column flex-md-row">
                         <button
                                 type="button"
-                                onclick="document.getElementById('text').value=''; updateCharCount()"
-                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200"
-                        >
+                                class="btn btn-outline-secondary order-md-2"
+                                onclick="clearText()">
+                            <i class="bi bi-x-circle me-1"></i>
                             クリア
                         </button>
 
-                        <div class="flex items-center space-x-3">
-                            <div id="loading" class="htmx-indicator flex items-center text-blue-600">
-                                <svg class="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                解析中...
-                            </div>
-
-                            <button
-                                    type="submit"
-                                    class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 shadow-sm"
-                            >
+                        <button
+                                type="submit"
+                                class="btn btn-primary order-md-1">
+                            <span class="btn-text">
+                                <i class="bi bi-play-circle me-1"></i>
                                 解析実行
-                            </button>
-                        </div>
+                            </span>
+                            <span class="loading-indicator">
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                処理中...
+                            </span>
+                        </button>
                     </div>
-                </div>
-            </form>
-        </div>
-
-        <!-- Results Section -->
-        <div id="results" class="animate-fade-in"></div>
-
-    </main>
-
-    <!-- Footer -->
-    <footer class="mt-16 border-t border-gray-200 bg-white">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div class="text-center">
-                <p class="text-sm text-gray-500">
-                    Code with ❤️
-                </p>
+                </form>
             </div>
         </div>
-    </footer>
+    </div>
 </div>
 
-<script>
-  // Character counter
-  const textArea = document.getElementById('text');
-  const charCount = document.getElementById('char-count');
+<!-- Results Section -->
+<div class="results-container">
+    <div id="results">
+    </div>
+</div>
 
-  function updateCharCount() {
-    const count = textArea.value.length;
-    charCount.textContent = `${count}文字`;
-  }
+<!-- Toast for copy confirmation -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="copySuccessToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i class="bi bi-check-circle-fill text-success me-2"></i>
+            <strong class="me-auto">成功</strong>
+            <small>たった今</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            結果をクリップボードにコピーしました！
+        </div>
+    </div>
 
-  textArea.addEventListener('input', updateCharCount);
+    <!-- 错误提示 Toast -->
+    <div id="copyErrorToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>
+            <strong class="me-auto">エラー</strong>
+            <small>たった今</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            自動コピーに失敗しました。手動でコピーしてください。
+        </div>
+    </div>
+</div>
 
-  // Form validation
-  document.querySelector('form').addEventListener('htmx:before-request', function(event) {
-    const text = textArea.value.trim();
-    if (!text) {
-      event.preventDefault();
-      textArea.focus();
-      textArea.classList.add('ring-2', 'ring-red-500', 'border-red-500');
-      setTimeout(() => {
-        textArea.classList.remove('ring-2', 'ring-red-500', 'border-red-500');
-      }, 2000);
-    }
-  });
+<!-- Footer Section -->
+<footer class="text-center py-4 mt-1">
+    <div class="container">
+        <p class="mb-0 text-muted">
+            <small>Code with ❤️ by <a href="https://github.com/NoHeartPen" target="_blank" rel="noopener noreferrer">卿少納言</a></small>
+        </p>
+    </div>
+</footer>
 
-  // Add example insertion functionality if needed
-  function insertExample(text) {
-    textArea.value = text;
-    updateCharCount();
-    textArea.focus();
-  }
-</script>
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+
+<script src="../static/script.js"></script>
 </body>
 </html>
