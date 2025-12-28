@@ -1,4 +1,3 @@
-import json
 import os
 from typing import Any, Dict, List
 
@@ -9,6 +8,7 @@ from fastapi.templating import Jinja2Templates
 
 try:
     from sudachipy import Dictionary, SplitMode
+
     SUDACHI_AVAILABLE = True
     tokenizer = Dictionary(dict_type="small").create()
 except ImportError:
@@ -45,18 +45,18 @@ def analyze_text_with_sudachi(text: str) -> List[Dict[str, Any]]:
             # 形態素情報を抽出
             pos = token.part_of_speech()
             features = {
-                'surface': token.surface(),  # 表層形
-                'dictionary_form': token.dictionary_form(),  # 辞書形
-                'reading_form': token.reading_form(),  # 読み
-                'pos': pos[0] if len(pos) > 0 else '',  # 品詞大分類
-                'pos_detail1': pos[1] if len(pos) > 1 else '',  # 品詞中分類
-                'pos_detail2': pos[2] if len(pos) > 2 else '',  # 品詞小分類
-                'pos_detail3': pos[3] if len(pos) > 3 else '',  # 品詞細分類
-                'conjugation_type': pos[4] if len(pos) > 4 else '',  # 活用型
-                'conjugation_form': pos[5] if len(pos) > 5 else '',  # 活用形
-                'normalized_form': token.normalized_form(),  # 正規化形
-                'word_id': token.word_id(),  # 語彙ID
-                'synonym_group_ids': token.synonym_group_ids()  # 同義語グループID
+                "surface": token.surface(),  # 表層形
+                "dictionary_form": token.dictionary_form(),  # 辞書形
+                "reading_form": token.reading_form(),  # 読み
+                "pos": pos[0] if len(pos) > 0 else "",  # 品詞大分類
+                "pos_detail1": pos[1] if len(pos) > 1 else "",  # 品詞中分類
+                "pos_detail2": pos[2] if len(pos) > 2 else "",  # 品詞小分類
+                "pos_detail3": pos[3] if len(pos) > 3 else "",  # 品詞細分類
+                "conjugation_type": pos[4] if len(pos) > 4 else "",  # 活用型
+                "conjugation_form": pos[5] if len(pos) > 5 else "",  # 活用形
+                "normalized_form": token.normalized_form(),  # 正規化形
+                "word_id": token.word_id(),  # 語彙ID
+                "synonym_group_ids": token.synonym_group_ids(),  # 同義語グループID
             }
             results.append(features)
 
@@ -70,42 +70,46 @@ def create_mock_analysis(text: str) -> List[Dict[str, Any]]:
     """開発用のモックデータを生成"""
     # 簡単な文字分割でモックデータを作成
     mock_results = []
-    words = text.replace('。', '').replace('、', '').split()
+    words = text.replace("。", "").replace("、", "").split()
 
     if not words:
         # 文字ベースで分割
         for i, char in enumerate(text):
             if char.strip():
-                mock_results.append({
-                    'surface': char,
-                    'dictionary_form': char,
-                    'reading_form': char,
-                    'pos': '記号' if not char.isalnum() else '名詞',
-                    'pos_detail1': '一般',
-                    'pos_detail2': '*',
-                    'pos_detail3': '*',
-                    'conjugation_type': '*',
-                    'conjugation_form': '*',
-                    'normalized_form': char,
-                    'word_id': i,
-                    'synonym_group_ids': []
-                })
+                mock_results.append(
+                    {
+                        "surface": char,
+                        "dictionary_form": char,
+                        "reading_form": char,
+                        "pos": "記号" if not char.isalnum() else "名詞",
+                        "pos_detail1": "一般",
+                        "pos_detail2": "*",
+                        "pos_detail3": "*",
+                        "conjugation_type": "*",
+                        "conjugation_form": "*",
+                        "normalized_form": char,
+                        "word_id": i,
+                        "synonym_group_ids": [],
+                    }
+                )
     else:
         for i, word in enumerate(words):
-            mock_results.append({
-                'surface': word,
-                'dictionary_form': word,
-                'reading_form': word,
-                'pos': '名詞',
-                'pos_detail1': '一般',
-                'pos_detail2': '*',
-                'pos_detail3': '*',
-                'conjugation_type': '*',
-                'conjugation_form': '*',
-                'normalized_form': word,
-                'word_id': i,
-                'synonym_group_ids': []
-            })
+            mock_results.append(
+                {
+                    "surface": word,
+                    "dictionary_form": word,
+                    "reading_form": word,
+                    "pos": "名詞",
+                    "pos_detail1": "一般",
+                    "pos_detail2": "*",
+                    "pos_detail3": "*",
+                    "conjugation_type": "*",
+                    "conjugation_form": "*",
+                    "normalized_form": word,
+                    "word_id": i,
+                    "synonym_group_ids": [],
+                }
+            )
 
     return mock_results
 
@@ -113,13 +117,9 @@ def create_mock_analysis(text: str) -> List[Dict[str, Any]]:
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
     """メインページを表示"""
-    return templates.TemplateResponse(
-        "index.html",
-        {"request": request}
-    )
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
-@app.post("/analyze")
 @app.post("/analyze")
 async def analyze_text(
     request: Request, text: str = Form(...), columns: List[str] = Form(default=[])
@@ -128,7 +128,7 @@ async def analyze_text(
     if not text or not text.strip():
         return templates.TemplateResponse(
             "partials/analysis_error.html",
-            {"request": request, "error": "テキストを入力してください"}
+            {"request": request, "error": "テキストを入力してください"},
         )
 
     try:
@@ -164,7 +164,7 @@ async def analyze_text(
     except Exception as e:
         return templates.TemplateResponse(
             "partials/analysis_error.html",
-            {"request": request, "error": f"解析中にエラーが発生しました: {str(e)}"}
+            {"request": request, "error": f"解析中にエラーが発生しました: {str(e)}"},
         )
 
 
@@ -174,10 +174,11 @@ def health_check():
     return {
         "status": "healthy",
         "sudachi_available": SUDACHI_AVAILABLE,
-        "version": "1.0.0"
+        "version": "1.0.0",
     }
 
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
