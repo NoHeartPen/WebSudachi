@@ -1,0 +1,174 @@
+
+import sys
+import os
+import socket
+import subprocess
+import time
+import webbrowser
+import threading
+
+# 矫正当前运行目录
+os.chdir(os.path.dirname(__file__))
+
+# 设置 sys.path
+sys.path.insert(0, os.path.abspath('site-packages'))
+sys.path.insert(0, os.path.abspath('.'))
+
+
+def is_port_in_use(port=8000):
+    """检查端口是否被占用"""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(('127.0.0.1', port)) == 0
+
+
+def kill_process_on_port(port=8000):
+    """杀掉占用指定端口的进程 (Windows)"""
+    try:
+        result = subprocess.run(
+            f'netstat -ano | findstr :{port}',
+            shell=True,
+            capture_output=True,
+            text=True
+        )
+
+        if result.stdout:
+            lines = result.stdout.strip().split('\n')
+            for line in lines:
+                if 'LISTENING' in line:
+                    pid = line.strip().split()[-1]
+                    print(f"  ⚠️  发现端口 {port} 被进程 PID {pid} 占用")
+                    print(f"  🔧 正在清理...")
+                    subprocess.run(f'taskkill /PID {pid} /F', shell=True, capture_output=True)
+                    time.sleep(1)
+                    print(f"  ✅ 端口 {port} 已清理\n")
+                    return True
+        return False
+    except Exception as e:
+        print(f"  ✗ 清理端口失败: {e}")
+        return False
+
+
+def check_health(port=8000, max_retries=15):
+    """检查服务器健康状态并打开浏览器"""
+    import urllib.request
+    import json
+
+    print("  ⏳ 正在等待服务器启动...")
+
+    for i in range(max_retries):
+        try:
+            url = f"http://127.0.0.1:{port}/health"
+            with urllib.request.urlopen(url, timeout=2) as response:
+                data = json.loads(response.read().decode())
+
+                # 清屏（可选）
+                # os.system('cls' if os.name == 'nt' else 'clear')
+
+                print("\n" + "="*70)
+                print("  🌸 WebSudachi - 日本語形態素解析ツール")
+                print("="*70)
+                print(f"\n  ✅ 服务器状态: {data.get('status', 'unknown').upper()}")
+                print(f"  📍 访问地址: http://127.0.0.1:{port}")
+                print(f"  📦 版本信息: {data.get('version', 'unknown')}")
+
+                # Sudachi 状态
+                if data.get('sudachi_available'):
+                    print(f"  🌸 Sudachi 引擎: ✅ 已加载")
+                else:
+                    print(f"  🌸 Sudachi 引擎: ⚠️  使用模拟数据")
+
+                print("\n" + "-"*70)
+                print("  💡 使用提示:")
+                print("     • 浏览器将在 2 秒后自动打开")
+                print("     • 按 Ctrl+C 可以停止服务器")
+                print("     • 报告问题: https://github.com/NoHeartPen/WebSudachi/issues")
+                print("-"*70 + "\n")
+
+                return True
+
+        except Exception as e:
+            if i < max_retries - 1:
+                time.sleep(0.5)
+            else:
+                print(f"\n  ✗ 服务器启动超时: {e}")
+                return False
+
+    return False
+
+
+def start_server():
+    """启动服务器"""
+    PORT = 8000
+
+    # 打印启动信息
+    print("\n" + "="*70)
+    print("  🚀 WebSudachi 启动中...")
+    print("="*70 + "\n")
+
+    # 检查端口占用
+    if is_port_in_use(PORT):
+        print(f"  ⚠️  端口 {PORT} 已被占用\n")
+        if not kill_process_on_port(PORT):
+            print(f"\n  ✗ 无法自动清理端口 {PORT}")
+            print(f"\n  📝 请手动执行以下命令清理:")
+            print(f"     netstat -ano | findstr :{PORT}")
+            print(f"     taskkill /PID <进程ID> /F\n")
+            input("  按回车键退出...")
+            sys.exit(1)
+        time.sleep(1)
+
+    # 在后台线程检查健康状态并打开浏览器
+    def health_check_and_open_browser():
+        if check_health(PORT):
+            time.sleep(2)
+            print("  🌐 正在打开浏览器...\n")
+            webbrowser.open(f"http://127.0.0.1:{PORT}")
+
+    threading.Thread(target=health_check_and_open_browser, daemon=True).start()
+
+    # 导入并启动 FastAPI 应用
+    try:
+        import uvicorn
+        from app import app
+
+        # 启动服务器（这会阻塞主线程）
+        uvicorn.run(
+            app,
+            host="127.0.0.1",
+            port=PORT,
+            log_level="info"
+        )
+
+    except ImportError as e:
+        print(f"\n  ✗ 导入模块失败: {e}")
+        print(f"\n  📝 请检查：")
+        print(f"     1. app.py 是否在根目录")
+        print(f"     2. site-packages 是否包含所有依赖\n")
+        input("  按回车键退出...")
+        sys.exit(1)
+
+    except Exception as e:
+        print(f"\n  ✗ 启动失败: {e}\n")
+        import traceback
+        traceback.print_exc()
+        input("\n  按回车键退出...")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    try:
+        start_server()
+
+    except KeyboardInterrupt:
+        print("\n\n" + "="*70)
+        print("  ✅ 服务器已停止")
+        print("  👋 感谢使用 WebSudachi！")
+        print("="*70 + "\n")
+        sys.exit(0)
+
+    except Exception as e:
+        print(f"\n  ✗ 意外错误: {e}\n")
+        import traceback
+        traceback.print_exc()
+        input("\n  按回车键退出...")
+        sys.exit(1)
