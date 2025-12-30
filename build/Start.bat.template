@@ -1,0 +1,29 @@
+@echo off
+chcp 65001 >nul 2>&1
+title WebSudachi
+cd /d "%~dp0"
+
+if not exist "WebSudachi\runtime\python.exe" (
+    cls
+    echo.
+    echo ======================================================================
+    echo   ERROR: WebSudachi directory not found!
+    echo ======================================================================
+    echo.
+    echo Please make sure the file structure is correct.
+    echo.
+    pause
+    exit /b 1
+)
+
+cd WebSudachi
+runtime\python.exe WebSudachi.int
+
+if errorlevel 1 (
+    echo.
+    echo ======================================================================
+    echo   Application exited with error
+    echo ======================================================================
+    echo.
+    pause
+)
