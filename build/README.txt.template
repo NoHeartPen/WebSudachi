@@ -1,0 +1,76 @@
+
+================================================================================
+  WebSudachi - Japanese Morphological Analyzer v{{VERSION}}
+================================================================================
+
+Quick Start / 快速开始
+--------------------------------------------------------------------------------
+
+1. Double-click "Start.bat" to launch the application
+   双击 "Start.bat" 启动应用
+
+2. Wait for the browser to open automatically (about 2-3 seconds)
+   等待浏览器自动打开（约2-3秒）
+
+3. Enter Japanese text in the browser to analyze
+   在浏览器中输入日语文本进行分析
+
+4. Press Ctrl+C in the console window to stop the server
+   在控制台窗口按 Ctrl+C 停止服务器
+
+
+System Requirements / 系统要求
+--------------------------------------------------------------------------------
+
+- Windows 7 or higher (64-bit recommended)
+- No Python installation required (embedded runtime included)
+- About 100MB disk space
+- Internet browser (Chrome, Firefox, Edge, etc.)
+
+
+Features / 功能特性
+--------------------------------------------------------------------------------
+
+- Japanese morphological analysis using Sudachi
+- Web-based user interface
+- Support for multiple display columns
+- Real-time text analysis
+- No installation required
+
+
+Troubleshooting / 故障排除
+--------------------------------------------------------------------------------
+
+Q: Nothing happens when I double-click Start.bat?
+A: Check if port 8000 is occupied. The app will try to clear it automatically.
+
+Q: Browser doesn't open automatically?
+A: Manually open: http://127.0.0.1:8000
+
+Q: How to change the port?
+A: Edit WebSudachi\WebSudachi.int, change PORT = 8000 to another value
+
+Q: Need to reinstall dependencies?
+A: Run WebSudachi\setup_dependencies.bat
+
+
+Advanced / 高级选项
+--------------------------------------------------------------------------------
+
+- Reinstall dependencies: WebSudachi\setup_dependencies.bat
+- View logs: Check console output
+- Report issues: https://github.com/NoHeartPen/WebSudachi/issues
+
+
+License / 许可证
+--------------------------------------------------------------------------------
+
+See WebSudachi\LICENSE for details
+
+
+================================================================================
+Version:    {{VERSION}}
+Date:       {{DATE}}
+Author:     NoHeartPen
+Repository: https://github.com/NoHeartPen/WebSudachi
+================================================================================
