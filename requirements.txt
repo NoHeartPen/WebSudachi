@@ -4,3 +4,5 @@ uvicorn[standard]
 jinja2
 sudachipy
 sudachidict-small
+
+python-dotenv

@@ -1,4 +1,3 @@
-import os
 from typing import Any, Dict, List
 
 from fastapi import FastAPI, Form, Request
@@ -12,6 +11,7 @@ try:
     SUDACHI_AVAILABLE = True
     # 初始化时不创建 tokenizer，改为按需创建
     available_dicts = {}
+    missing_dicts = []  # 记录缺失的词典
     # 检查可用的词典
     for dict_type in ["small", "core", "full"]:
         try:
@@ -19,10 +19,27 @@ try:
             available_dicts[dict_type] = True
         except (ValueError, KeyError, ImportError) as e:  # Specify expected exceptions
             available_dicts[dict_type] = False
+            if dict_type in ["core", "full"]:
+                missing_dicts.append(dict_type)
 except ImportError:
     SUDACHI_AVAILABLE = False
     available_dicts = {}
+    missing_dicts = []
     print("Warning: sudachipy not installed. Using mock data for development.")
+
+import os
+
+# 加载 .env 文件
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    print("Warning: dotenv not installed. Environment variables not loaded.")
+
+# 检测是否为演示部署环境
+# 默认为 True（演示模式），通过环境变量显式设置为 false/0 来禁用
+IS_DEMO_DEPLOY = os.getenv("IS_DEMO_DEPLOY", "true").lower() not in ["false", "0", "no"]
 
 app = FastAPI(title="Chamame", description="Sudachi形態素解析ツール")
 
@@ -148,7 +165,13 @@ def create_mock_analysis(text: str) -> List[Dict[str, Any]]:
 def index(request: Request):
     """メインページを表示"""
     return templates.TemplateResponse(
-        "index.html", {"request": request, "available_dicts": available_dicts}
+        "index.html",
+        {
+            "request": request,
+            "available_dicts": available_dicts,
+            "is_demo_deploy": IS_DEMO_DEPLOY,
+            "missing_dicts": missing_dicts,
+        },
     )
 
 
@@ -215,6 +238,8 @@ def health_check():
         "status": "healthy",
         "sudachi_available": SUDACHI_AVAILABLE,
         "available_dicts": available_dicts,
+        "missing_dicts": missing_dicts,
+        "is_demo_deploy": IS_DEMO_DEPLOY,
         "version": "1.0.0",
     }
 
