@@ -308,3 +308,20 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 });
 
+// 确保 HTMX 提交时包含 Sudachi 设置参数
+document.addEventListener('htmx:configRequest', function (event) {
+    const form = event.detail.target.closest('form');
+    if (form && event.detail.path === '/analyze') {
+        // 确保包含 split_mode
+        const splitMode = form.querySelector('input[name="split_mode"]:checked');
+        if (splitMode?.value) {
+            event.detail.parameters['split_mode'] = splitMode.value;
+        }
+
+        // 确保包含 dict_type
+        const dictType = form.querySelector('select[name="dict_type"]');
+        if (dictType?.value) {
+            event.detail.parameters['dict_type'] = dictType.value;
+        }
+    }
+});

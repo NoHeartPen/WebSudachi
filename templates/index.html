@@ -73,6 +73,59 @@
                         <label for="text">テキストを入力してください</label>
                     </div>
 
+                    <!-- Sudachi Settings -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <button class="btn btn-link text-decoration-none p-0 text-start" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#sudachiSettings"
+                                        aria-expanded="false" aria-controls="sudachiSettings">
+                                    <i class="bi bi-gear me-1"></i>Sudachi 設定
+                                    <i class="bi bi-chevron-down ms-1 collapse-icon"></i>
+                                </button>
+                            </h6>
+                        </div>
+                        <div class="collapse" id="sudachiSettings">
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <!-- Split Mode Selection -->
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">分割モード</label>
+                                        <div class="d-flex gap-2 w-100" role="group" aria-label="Split mode selection">
+                                            <input type="radio" class="btn-check" name="split_mode" id="mode_a"
+                                                   value="A" checked>
+                                            <label class="btn btn-outline-primary flex-fill" for="mode_a">A</label>
+
+                                            <input type="radio" class="btn-check" name="split_mode" id="mode_b"
+                                                   value="B">
+                                            <label class="btn btn-outline-primary flex-fill" for="mode_b">B</label>
+
+                                            <input type="radio" class="btn-check" name="split_mode" id="mode_c"
+                                                   value="C">
+                                            <label class="btn btn-outline-primary flex-fill" for="mode_c">C</label>
+                                        </div>
+                                        <small class="text-muted d-block mt-1">
+                                            A: 短単位、最も細かい分割 / B: 中単位、中程度の分割 / C: 長単位、最も粗い分割
+                                        </small>
+                                    </div>
+
+                                    <!-- Dictionary Type Selection -->
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">辞書タイプ</label>
+                                        <select class="form-select" name="dict_type" id="dict_type">
+                                            <option value="small" selected>Small (小規模)</option>
+                                            <option value="core">Core (中規模)</option>
+                                            <option value="full">Full (大規模)</option>
+                                        </select>
+                                        <small class="text-muted d-block mt-1">
+                                            辞書サイズと語彙数のバランスを選択
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="card mb-3">
                         <div class="card-header">
                             <div class="d-flex justify-content-between align-items-center">

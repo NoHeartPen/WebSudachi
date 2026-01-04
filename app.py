@@ -10,10 +10,18 @@ try:
     from sudachipy import Dictionary, SplitMode
 
     SUDACHI_AVAILABLE = True
-    tokenizer = Dictionary(dict_type="small").create()
+    # 初始化时不创建 tokenizer，改为按需创建
+    available_dicts = {}
+    # 检查可用的词典
+    for dict_type in ["small", "core", "full"]:
+        try:
+            Dictionary(dict_type=dict_type)
+            available_dicts[dict_type] = True
+        except (ValueError, KeyError, ImportError) as e:  # Specify expected exceptions
+            available_dicts[dict_type] = False
 except ImportError:
     SUDACHI_AVAILABLE = False
-    tokenizer = None
+    available_dicts = {}
     print("Warning: sudachipy not installed. Using mock data for development.")
 
 app = FastAPI(title="Chamame", description="Sudachi形態素解析ツール")
@@ -30,15 +38,37 @@ templates = Jinja2Templates(
 )
 
 
-def analyze_text_with_sudachi(text: str) -> List[Dict[str, Any]]:
+def get_split_mode(mode_str: str) -> "SplitMode":
+    """文字列から SplitMode を取得"""
+    mode_map = {
+        "A": SplitMode.A,
+        "B": SplitMode.B,
+        "C": SplitMode.C,
+    }
+    return mode_map.get(mode_str.upper(), SplitMode.C)
+
+
+def analyze_text_with_sudachi(
+    text: str, split_mode: str = "A", dict_type: str = "small"
+) -> List[Dict[str, Any]]:
     """Sudachiを使ってテキストを解析する"""
-    if not SUDACHI_AVAILABLE or not tokenizer:
+    if not SUDACHI_AVAILABLE:
         # Sudachiが利用できない場合のモックデータ
+        # FIXME 前端提示报错
         return create_mock_analysis(text)
 
+    # 指定された辞書が利用できない場合はフォールバック
+    if not available_dicts.get(dict_type, False):
+        print(f"Warning: {dict_type} dictionary not available, falling back to small")
+        dict_type = "small"
+
     try:
+        # 動的に tokenizer を作成
+        tokenizer = Dictionary(dict_type=dict_type).create()
+        mode = get_split_mode(split_mode)
+
         # Sudachiで解析
-        tokens = tokenizer.tokenize(text, SplitMode.C)  # Mode Cを使用
+        tokens = tokenizer.tokenize(text, mode)
         results = []
 
         for token in tokens:
@@ -117,12 +147,18 @@ def create_mock_analysis(text: str) -> List[Dict[str, Any]]:
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
     """メインページを表示"""
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(
+        "index.html", {"request": request, "available_dicts": available_dicts}
+    )
 
 
 @app.post("/analyze")
 async def analyze_text(
-    request: Request, text: str = Form(...), columns: List[str] = Form(default=[])
+    request: Request,
+    text: str = Form(...),
+    columns: List[str] = Form(default=[]),
+    split_mode: str = Form(default="C"),
+    dict_type: str = Form(default="small"),
 ):
     """テキスト解析のエンドポイント"""
     if not text or not text.strip():
@@ -132,8 +168,10 @@ async def analyze_text(
         )
 
     try:
-        # テキスト解析を実行
-        analysis_results = analyze_text_with_sudachi(text.strip())
+        # テキスト解析を実行（split_mode と dict_type を渡す）
+        analysis_results = analyze_text_with_sudachi(
+            text.strip(), split_mode=split_mode, dict_type=dict_type
+        )
 
         # デフォルトの列設定（何も選択されていない場合）
         if not columns:
@@ -159,6 +197,8 @@ async def analyze_text(
                 "total_morphemes": len(analysis_results),
                 "sudachi_available": SUDACHI_AVAILABLE,
                 "selected_columns": columns,
+                "split_mode": split_mode,
+                "dict_type": dict_type,
             },
         )
     except Exception as e:
@@ -174,6 +214,7 @@ def health_check():
     return {
         "status": "healthy",
         "sudachi_available": SUDACHI_AVAILABLE,
+        "available_dicts": available_dicts,
         "version": "1.0.0",
     }
 
