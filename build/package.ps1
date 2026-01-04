@@ -214,6 +214,15 @@ foreach ($file in $files) {
     }
 }
 
+# Create .env for packaged version (full features enabled)
+$envContent = @"
+# WebSudachi Packaged Version Configuration
+# Full features are enabled for self-deployed packages
+IS_DEMO_DEPLOY=false
+"@
+$envContent | Out-File -Encoding UTF8 "$APP\.env"
+Write-Host "      Created .env (IS_DEMO_DEPLOY=false)" -ForegroundColor Gray
+
 Write-Host "      Copied $copiedCount folders + files" -ForegroundColor Gray
 Write-Host "      Done." -ForegroundColor Green
 Write-Host ""
