@@ -308,3 +308,146 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 });
 
+// 确保 HTMX 提交时包含 Sudachi 设置参数
+document.addEventListener('htmx:configRequest', function (event) {
+    const form = event.detail.target.closest('form');
+    if (form && event.detail.path === '/analyze') {
+        // 确保包含 split_mode
+        const splitMode = form.querySelector('input[name="split_mode"]:checked');
+        if (splitMode?.value) {
+            event.detail.parameters['split_mode'] = splitMode.value;
+        }
+
+        // 确保包含 dict_type
+        const dictType = form.querySelector('select[name="dict_type"]');
+        if (dictType?.value) {
+            event.detail.parameters['dict_type'] = dictType.value;
+        }
+    }
+});
+
+// ========== 辞書タイプ変更検出 ==========
+document.addEventListener('DOMContentLoaded', function () {
+	const dictTypeSelect = document.getElementById('dict_type');
+
+	if (!dictTypeSelect) return;
+
+	dictTypeSelect.addEventListener('change', function (e) {
+		const selectedDict = e.target.value;
+
+		// 如果是 isDemo 环境且选择了 core 或 full
+		if (globalThis.APP_CONFIG.isDemoDeploy && (selectedDict === 'core' || selectedDict === 'full')) {
+			// 显示 isDemo 提示 Modal
+			const modal = new bootstrap.Modal(document.getElementById('isDemoDeployModal'));
+			modal.show();
+
+			// 重置为 small
+			setTimeout(() => {
+				dictTypeSelect.value = 'small';
+			}, 300);
+			return;
+		}
+
+		// 如果不是 Demo 环境，检查词库是否已安装
+		if (!globalThis.APP_CONFIG.isDemoDeploy && !globalThis.APP_CONFIG.availableDicts[selectedDict]) {
+			// 显示缺失词库提示 Modal
+			const modal = new bootstrap.Modal(document.getElementById('missingDictModal'));
+
+			// 更新安装命令
+			updateInstallCommand(selectedDict);
+
+			modal.show();
+
+			// 重置为 small
+			setTimeout(() => {
+				dictTypeSelect.value = 'small';
+			}, 300);
+		}
+	});
+
+	// 页面加载时为不可用的选项添加禁用样式
+	if (!globalThis.APP_CONFIG.isDemoDeploy) {
+		const options = dictTypeSelect.querySelectorAll('option');
+		options.forEach(option => {
+			const dictType = option.value;
+			if (dictType !== 'small' && !globalThis.APP_CONFIG.availableDicts[dictType]) {
+				option.textContent += ' (未インストール)';
+				option.style.color = '#999';
+			}
+		});
+	}
+});
+
+// 更新安装命令
+function updateInstallCommand(selectedDict) {
+	const commandElement = document.getElementById('installCommand');
+	if (!commandElement) return;
+
+	let command = 'pip install ';
+
+	if (selectedDict === 'core') {
+		command += 'sudachidict-core';
+	} else if (selectedDict === 'full') {
+		command += 'sudachidict-full';
+	} else {
+		// 如果有多个缺失的词库，一次性安装
+		const missingDicts = globalThis.APP_CONFIG.missingDicts || [];
+		if (missingDicts.length > 0) {
+			command += missingDicts.map(d => `sudachidict-${d}`).join(' ');
+		}
+	}
+
+	commandElement.textContent = command;
+}
+
+// 复制安装命令
+function copyInstallCommand(event) {
+	const commandElement = document.getElementById('installCommand');
+	if (!commandElement) return;
+
+	const command = commandElement.textContent;
+
+	if (navigator.clipboard?.writeText) {
+		navigator.clipboard.writeText(command)
+			.then(() => {
+				// 显示复制成功提示
+				if (event) {
+					const btn = event.target.closest('button');
+					if (btn) {
+						const originalHTML = btn.innerHTML;
+						btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>コピーしました';
+						btn.classList.add('btn-success');
+						btn.classList.remove('btn-outline-light');
+
+						setTimeout(() => {
+							btn.innerHTML = originalHTML;
+							btn.classList.remove('btn-success');
+							btn.classList.add('btn-outline-light');
+						}, 2000);
+					}
+				} else {
+					// 如果没有 event，就用简单的 alert
+					alert('コマンドをコピーしました！');
+				}
+			})
+			.catch(err => {
+				console.error('コピーに失敗しました:', err);
+				alert('コピーに失敗しました。手動でコピーしてください。');
+			});
+	} else {
+		// Fallback: 选中文本
+		const range = document.createRange();
+		range.selectNode(commandElement);
+		window.getSelection().removeAllRanges();
+		window.getSelection().addRange(range);
+
+		try {
+			document.execCommand('copy');
+			alert('コマンドをコピーしました！');
+		} catch (err) {
+			alert('コピーに失敗しました。手動でコピーしてください。');
+		}
+
+		window.getSelection().removeAllRanges();
+	}
+}

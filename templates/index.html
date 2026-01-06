@@ -73,6 +73,65 @@
                         <label for="text">テキストを入力してください</label>
                     </div>
 
+                    <!-- Sudachi Settings -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <button class="btn btn-link text-decoration-none p-0 text-start" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#sudachiSettings"
+                                        aria-expanded="false" aria-controls="sudachiSettings">
+                                    <i class="bi bi-gear me-1"></i>Sudachi 設定
+                                    <i class="bi bi-chevron-down ms-1 collapse-icon"></i>
+                                </button>
+                            </h6>
+                        </div>
+                        <div class="collapse" id="sudachiSettings">
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <!-- Split Mode Selection -->
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">分割モード</label>
+                                        <div class="d-flex gap-2 w-100" role="group" aria-label="Split mode selection">
+                                            <input type="radio" class="btn-check" name="split_mode" id="mode_a"
+                                                   value="A" checked>
+                                            <label class="btn btn-outline-primary flex-fill" for="mode_a">A</label>
+
+                                            <input type="radio" class="btn-check" name="split_mode" id="mode_b"
+                                                   value="B">
+                                            <label class="btn btn-outline-primary flex-fill" for="mode_b">B</label>
+
+                                            <input type="radio" class="btn-check" name="split_mode" id="mode_c"
+                                                   value="C">
+                                            <label class="btn btn-outline-primary flex-fill" for="mode_c">C</label>
+                                        </div>
+                                        <small class="text-muted d-block mt-1">
+                                            A: 短単位、最も細かい分割 / B: 中単位、中程度の分割 / C: 長単位、最も粗い分割
+                                        </small>
+                                    </div>
+
+                                    <!-- Dictionary Type Selection -->
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">辞書タイプ</label>
+                                        <select class="form-select" name="dict_type" id="dict_type">
+                                            <option value="small" selected>Small (小規模)</option>
+                                            <option value="core"
+                                                    {% if not available_dicts.get('core', False) %}data-unavailable="true"{% endif %}>
+                                                Core (中規模)
+                                            </option>
+                                            <option value="full"
+                                                    {% if not available_dicts.get('full', False) %}data-unavailable="true"{% endif %}>
+                                                Full (大規模)
+                                            </option>
+                                        </select>
+                                        <small class="text-muted d-block mt-1">
+                                            辞書サイズと語彙数のバランスを選択
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="card mb-3">
                         <div class="card-header">
                             <div class="d-flex justify-content-between align-items-center">
@@ -243,6 +302,76 @@
         </p>
     </div>
 </footer>
+
+<!-- Demo 部署提示 Modal -->
+<div class="modal fade" id="isDemoDeployModal" tabindex="-1" aria-labelledby="isDemoDeployModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="isDemoDeployModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>辞書が利用できません
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">申し訳ございません。デモサイトでは Core および Full 辞書は利用できません。</p>
+                <div class="alert alert-info mb-0" role="alert">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>解決方法：</strong>ご自身でデプロイしてください。
+                    <hr>
+                    <a href="https://github.com/NoHeartPen/WebSudachi" target="_blank" rel="noopener noreferrer"
+                       class="btn btn-sm btn-outline-primary mt-2">
+                        <i class="bi bi-github me-1"></i>GitHub で手順を確認
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 词库缺失提示 Modal -->
+<div class="modal fade" id="missingDictModal" tabindex="-1" aria-labelledby="missingDictModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="missingDictModalLabel">
+                    <i class="bi bi-exclamation-octagon-fill me-2"></i>辞書がインストールされていません
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">選択した辞書がインストールされていません。以下のコマンドを実行してください：</p>
+                <div class="alert alert-dark" role="alert">
+                    <code id="installCommand" style="color: #fff;">pip install sudachidict-core sudachidict-full</code>
+                    <button class="btn btn-sm btn-outline-light float-end" onclick="copyInstallCommand()">
+                        <i class="bi bi-clipboard me-1"></i>コピー
+                    </button>
+                </div>
+                <small class="text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    インストール後、サーバーを再起動してください。
+                </small>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 传递后端数据到前端 -->
+<script>
+    window.APP_CONFIG = {
+        isDemoDeploy: {{ 'true' if is_demo_deploy else 'false' }},
+        availableDicts: {{ available_dicts | tojson }},
+        missingDicts: {{ missing_dicts | tojson }}
+    };
+</script>
 
 <!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
